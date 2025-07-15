@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestión de Termas de Ourense</title>
+  <style>
+
+body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #c0c5c7;
+    }
+
+   /* Portada */
+  .hero {
+  background-image: url('portadah1.jpg'); /* Cambia a tu imagen */
+  background-size: cover;
+  background-position: center;
+  height: 300px; /* o lo que necesites */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: rgb(255, 255, 255);
+  position: relative;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin: 0;
+}
+
+
+
+.hero .add-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background-color: #28a745;
+  font-weight: bold;
+}
+
+
+    .container {
+      width: auto;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .form-container {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .form-container input,
+    .form-container textarea {
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .btn.danger {
+      background-color: #007bff;
+      margin: 15px;
+    }
+
+    .filters {
+  display: flex;
+  flex-wrap: wrap;       /* Para que se acomoden si no caben en pantalla */
+  gap: 10px;              /* Espacio entre elementos */
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.filters input,
+.filters select {
+  flex: 1;                /* Que crezcan si hay espacio */
+  min-width: 180px;
+}
+
+.filters button {
+  white-space: nowrap;    /* Que los botones no se partan en dos líneas */
+}
+
+
+    /* Tarjetas en columnas */
+  #listaTermas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Columnas flexibles */
+  gap: 20px;                 /* Espacio entre tarjetas */
+  width: 100%;               /* El contenedor ocupa todo el ancho disponible */
+  padding: 20px;
+  box-sizing: border-box;
+  max-width: 1200px;         /* Centrado opcional */
+  margin: 0 auto;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;               /* Cada tarjeta ocupa el 100% de su columna */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover; /*hace que la imagen se ajuste al tamaño del contenedor manteniendo su proporción original. */
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+
+    .card h3 {
+      margin: 10px 0 5px;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+    }
+
+
+.filtrarTermas {
+    margin: 20px;
+}
+
+
+  </style>
+</head>
+<body>
+
+  <header class="hero">
+    <h1>Termas de Ourense</h1>
+  </header>
+
+  <div class="container">
+    <div class="filters">
+      <input type="text" id="searchDescription" placeholder="Buscar por descripción..." />
+      <select id="filterRaza">
+        <option value="">Todas las zonas</option>
+      </select>
+      <button class="btn" onclick="filtrarTermas()">Buscar</button>
+      <button class="btn" onclick="toggleFormulario()">Añadir Nueva Terma</button>
+    </div>
+
+    <div class="form-container" id="formulario">
+      <input type="text" id="nombreTerma" placeholder="Nombre de la terma" />
+      <input type="text" id="imagenTerma" placeholder="URL de la imagen" />
+      <input type="text" id="zonaTerma" placeholder="Zona o tipo (opcional)" />
+      <textarea id="descripcionTerma" placeholder="Descripción"></textarea>
+      <button class="btn" onclick="guardarTerma()">Guardar</button>
+      <button class="btn danger" onclick="cancelarFormulario()">Cancelar</button>
+    </div>
+
+    <div id="listaTermas"></div>
+  </div>
+
+  <script>
+    const listaTermas = [
+      {
+        nombre: "Termas de Outariz",
+        imagen: "outariz.jpeg",
+        zona: "Outariz",
+        descripcion: "Situadas junto al río Miño, las Termas de Outariz ofrecen un ambiente relajante con piscinas termales al aire libre rodeadas de naturaleza, ideales para desconectar y revitalizar cuerpo y mente."
+      },
+      {
+        nombre: "Termas de As Burgas",
+        imagen: "burgas.jpeg",
+        zona: "Burgas",
+        descripcion: "Ubicadas en el centro histórico de Ourense, estas fuentes termales han sido utilizadas desde la época romana por sus propiedades medicinales, siendo un símbolo cultural y turístico de la ciudad."
+      },
+      {
+        nombre: "Termas de Chavasqueira",
+        imagen: "chavasqueira.jpeg",
+        zona: "Chavasqueira",
+        descripcion: "Inspiradas en el estilo japonés, las Termas de Chavasqueira ofrecen un espacio acogedor para relajarse junto al río con vistas naturales y tratamientos termales personalizados."
+      }
+    ];
+
+    // Referencias a elementos del DOM
+    const listaElement = document.getElementById("listaTermas");
+    const formulario = document.getElementById("formulario");
+
+    
+    //Muestra las termas en el contenedor correspondiente.
+    function mostrarTermas(array = listaTermas) {
+      // Limpia el contenedor antes de mostrar los elementos
+      listaElement.innerHTML = "";
+      // Por cada terma crea una tarjeta y la añade al contenedor
+      array.forEach((terma, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+          // HTML interno de cada tarjeta con imagen, nombre, zona, descripción y botón eliminar
+        card.innerHTML = `
+          <img src="${terma.imagen}" alt="${terma.nombre}">
+          <h3>${terma.nombre}</h3>
+          <p><strong>Zona:</strong> ${terma.zona || "No especificada"}</p>
+          <p>${terma.descripcion}</p>
+          <button class="btn danger" onclick="eliminarTerma(${index})">Eliminar</button>
+        `;
+        listaElement.appendChild(card);
+      });
+      // Actualiza las opciones del select de zonas según los datos actuales
+      actualizarSelectZonas();
+    }
+     //Muestra u oculta el formulario 
+    function toggleFormulario() {
+      formulario.style.display = formulario.style.display === "none" || formulario.style.display === "" ? "block" : "none";
+    }
+    
+    function cancelarFormulario() {
+      formulario.style.display = "none";
+      limpiarFormulario();
+    }
+
+    function guardarTerma() {
+      const nombre = document.getElementById("nombreTerma").value.trim();
+      const imagen = document.getElementById("imagenTerma").value.trim();
+      const zona = document.getElementById("zonaTerma").value.trim();
+      const descripcion = document.getElementById("descripcionTerma").value.trim();
+
+      if (!nombre || !imagen || !descripcion) {
+        alert("Por favor, completa los campos obligatorios: nombre, imagen y descripción.");
+        return;
+      }
+       // Añade la nueva terma al array
+      listaTermas.push({ nombre, imagen, zona, descripcion });
+      mostrarTermas();
+      cancelarFormulario();
+    }
+
+    function eliminarTerma(index) {
+      if (confirm("¿Seguro que deseas eliminar esta terma?")) {
+        listaTermas.splice(index, 1); // Elimina la terma del array
+        mostrarTermas(); // Actualiza la lista 
+      }
+    }
+
+    function filtrarTermas() {
+      const desc = document.getElementById("searchDescription").value.toLowerCase();
+       //Obtiene las zonas únicas filtrando valores vacíos
+      const zonaSeleccionada = document.getElementById("filterRaza").value.toLowerCase();
+       
+      // Filtra el array de termas según descripción y zona
+      const filtradas = listaTermas.filter(terma => {
+        const coincideDescripcion = terma.descripcion.toLowerCase().includes(desc);
+        const coincideZona = zonaSeleccionada === "" || terma.zona?.toLowerCase() === zonaSeleccionada;
+        return coincideDescripcion && coincideZona;
+      });
+
+      mostrarTermas(filtradas);
+    }
+
+    function actualizarSelectZonas() {
+      const select = document.getElementById("filterRaza");
+      const zonasUnicas = [...new Set(listaTermas.map(t => t.zona).filter(z => z))];
+      // Reinicia el contenido del select y añade la opción por defecto
+      select.innerHTML = '<option value="">Todas las termas</option>';
+      zonasUnicas.forEach(zona => {
+        const option = document.createElement("option");
+        option.value = zona;
+        option.textContent = zona;
+        select.appendChild(option);
+      });
+    }
+
+    function limpiarFormulario() {
+      document.getElementById("nombreTerma").value = "";
+      document.getElementById("imagenTerma").value = "";
+      document.getElementById("zonaTerma").value = "";
+      document.getElementById("descripcionTerma").value = "";
+    }
+
+    
+    // Muestra todas las termas al cargar la página
+    mostrarTermas();
+  </script>
+</body>
+</html>
